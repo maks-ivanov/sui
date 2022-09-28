@@ -16,7 +16,6 @@ import TableCard from '../../components/table/TableCard';
 import TabFooter from '../../components/tabs/TabFooter';
 import Tabs from '../../components/tabs/Tabs';
 import { NetworkContext } from '../../context';
-import theme from '../../styles/theme.module.css';
 import {
     DefaultRpcClient as rpc,
     type Network,
@@ -155,7 +154,31 @@ function LatestTxCard({ ...data }: RecentTx) {
         },
         [setSearchParams]
     );
+    const defaultActiveTab = 0;
+    const recentTx = genTableDataFromTxData(results.latestTx, truncateLength);
 
+    const stats = {
+        count,
+        stats_text: 'Total transactions',
+    };
+
+    const PaginationWithStatsOrStatsWithLink =
+        paginationtype === 'pagination' ? (
+            <Pagination
+                totalItems={count}
+                itemsPerPage={txPerPage}
+                updateItemsPerPage={setTxPerPage}
+                onPagiChangeFn={handlePageChange}
+                currentPage={pageIndex}
+                stats={stats}
+            />
+        ) : (
+            <TabFooter stats={stats}>
+                <Link className={styles.moretxbtn} to="/transactions">
+                    <div>More Transactions</div> <ArrowRight />
+                </Link>
+            </TabFooter>
+        );
     // update the page index when the user clicks on the pagination buttons
     useEffect(() => {
         let isMounted = true;
@@ -193,8 +216,14 @@ function LatestTxCard({ ...data }: RecentTx) {
 
     if (results.loadState === 'pending') {
         return (
-            <div className={theme.textresults}>
-                <div className={styles.content}>Loading...</div>
+            <div className={cl(styles.txlatestresults, styles[paginationtype])}>
+                <Tabs selected={defaultActiveTab}>
+                    <div title="Transactions">
+                        <div />
+                        {paginationtype !== 'none' &&
+                            PaginationWithStatsOrStatsWithLink}
+                    </div>
+                </Tabs>
             </div>
         );
     }
@@ -211,32 +240,6 @@ function LatestTxCard({ ...data }: RecentTx) {
     if (results.loadState === 'loaded' && !results.latestTx.length) {
         return <ErrorResult id="" errorMsg="No Transactions Found" />;
     }
-
-    const defaultActiveTab = 0;
-    const recentTx = genTableDataFromTxData(results.latestTx, truncateLength);
-
-    const stats = {
-        count,
-        stats_text: 'Total transactions',
-    };
-
-    const PaginationWithStatsOrStatsWithLink =
-        paginationtype === 'pagination' ? (
-            <Pagination
-                totalItems={count}
-                itemsPerPage={txPerPage}
-                updateItemsPerPage={setTxPerPage}
-                onPagiChangeFn={handlePageChange}
-                currentPage={pageIndex}
-                stats={stats}
-            />
-        ) : (
-            <TabFooter stats={stats}>
-                <Link className={styles.moretxbtn} to="/transactions">
-                    <div>More Transactions</div> <ArrowRight />
-                </Link>
-            </TabFooter>
-        );
 
     return (
         <div className={cl(styles.txlatestresults, styles[paginationtype])}>
