@@ -1,6 +1,5 @@
 // Copyright (c) 2022, Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-
 import {
     type GetTxnDigestsResponse,
     type ExecutionStatusType,
@@ -121,6 +120,10 @@ async function getRecentTransactions(
     }
 }
 
+async function getTransactionCount(network: Network | string): Promise<number> {
+    return rpc(network).getTotalTransactionNumber();
+}
+
 type RecentTx = {
     count?: number;
     paginationtype?: PaginationType;
@@ -130,7 +133,6 @@ type RecentTx = {
 
 function LatestTxCard({ ...data }: RecentTx) {
     const {
-        count = 0,
         truncateLength = TRUNCATE_LENGTH,
         paginationtype = DEFAULT_PAGI_TYPE,
     } = data;
@@ -140,8 +142,10 @@ function LatestTxCard({ ...data }: RecentTx) {
     );
 
     const [isLoaded, setIsLoaded] = useState(false);
+    const [, setIsCountFound] = useState(false);
     const [results, setResults] = useState(initState);
     const [recentTx, setRecentTx] = useState(loadingTable);
+    const [txCount, setTxCount] = useState({ loadState: 'loading', data: 0 });
 
     const [network] = useContext(NetworkContext);
     const [searchParams, setSearchParams] = useSearchParams();
@@ -160,14 +164,14 @@ function LatestTxCard({ ...data }: RecentTx) {
     const defaultActiveTab = 0;
 
     const stats = {
-        count,
+        count: txCount.data,
         stats_text: 'Total transactions',
     };
 
     const PaginationWithStatsOrStatsWithLink =
         paginationtype === 'pagination' ? (
             <Pagination
-                totalItems={count}
+                totalItems={txCount.data}
                 itemsPerPage={txPerPage}
                 updateItemsPerPage={setTxPerPage}
                 onPagiChangeFn={handlePageChange}
@@ -184,44 +188,74 @@ function LatestTxCard({ ...data }: RecentTx) {
     // update the page index when the user clicks on the pagination buttons
     useEffect(() => {
         let isMounted = true;
-        // If pageIndex is greater than maxTxPage, set to maxTxPage
-        const maxTxPage = Math.ceil(count / txPerPage);
-        const pg = pageIndex > maxTxPage ? maxTxPage : pageIndex;
 
-        getRecentTransactions(network, count, txPerPage, pg)
-            .then(async (resp: any) => {
-                if (isMounted) {
-                    setIsLoaded(true);
-                }
-                setResults({
+        getTransactionCount(network)
+            .then((resp: number) => {
+                setTxCount({
                     loadState: 'loaded',
-                    latestTx: resp,
-                    totalTxcount: count,
+                    data: resp,
                 });
 
-                if (results.latestTx.length > 0) {
-                    setRecentTx(
-                        genTableDataFromTxData(results.latestTx, truncateLength)
-                    );
-                }
+                setIsCountFound(true);
+                return resp;
             })
             .catch((err) => {
-                setResults({
-                    ...initState,
+                setTxCount({
                     loadState: 'fail',
+                    data: 0,
                 });
-                setIsLoaded(false);
+
+                setIsCountFound(false);
                 console.error(
-                    'Encountered error when fetching recent transactions',
+                    'Encountered error when fetching transaction count',
                     err
                 );
-                Sentry.captureException(err);
+            })
+            .then((count) => {
+                if (typeof count === 'number') {
+                    // If pageIndex is greater than maxTxPage, set to maxTxPage
+                    const maxTxPage = Math.ceil(count / txPerPage);
+                    const pg = pageIndex > maxTxPage ? maxTxPage : pageIndex;
+
+                    getRecentTransactions(network, count, txPerPage, pg)
+                        .then(async (resp: any) => {
+                            if (isMounted) {
+                                setIsLoaded(true);
+                            }
+                            setResults({
+                                loadState: 'loaded',
+                                latestTx: resp,
+                                totalTxcount: count,
+                            });
+
+                            if (results.latestTx.length > 0) {
+                                setRecentTx(
+                                    genTableDataFromTxData(
+                                        results.latestTx,
+                                        truncateLength
+                                    )
+                                );
+                            }
+                        })
+                        .catch((err) => {
+                            setResults({
+                                ...initState,
+                                loadState: 'fail',
+                            });
+                            setIsLoaded(false);
+                            console.error(
+                                'Encountered error when fetching recent transactions',
+                                err
+                            );
+                            Sentry.captureException(err);
+                        });
+                }
             });
+
         return () => {
             isMounted = false;
         };
     }, [
-        count,
         network,
         pageIndex,
         setSearchParams,
