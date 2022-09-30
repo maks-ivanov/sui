@@ -228,12 +228,9 @@ function LatestTxCard({ ...data }: RecentTx) {
                                 totalTxcount: count,
                             });
 
-                            if (results.latestTx.length > 0) {
+                            if (resp.length > 0) {
                                 setRecentTx(
-                                    genTableDataFromTxData(
-                                        results.latestTx,
-                                        truncateLength
-                                    )
+                                    genTableDataFromTxData(resp, truncateLength)
                                 );
                             }
                         })
@@ -255,14 +252,7 @@ function LatestTxCard({ ...data }: RecentTx) {
         return () => {
             isMounted = false;
         };
-    }, [
-        network,
-        pageIndex,
-        setSearchParams,
-        txPerPage,
-        results,
-        truncateLength,
-    ]);
+    }, [network, pageIndex, setSearchParams, txPerPage, truncateLength]);
 
     if (!isLoaded && results.loadState === 'fail') {
         return (
