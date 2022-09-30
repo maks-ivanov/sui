@@ -145,7 +145,7 @@ function LatestTxCard({ ...data }: RecentTx) {
     const [, setIsCountFound] = useState(false);
     const [results, setResults] = useState(initState);
     const [recentTx, setRecentTx] = useState(loadingTable);
-    const [txCount, setTxCount] = useState({ loadState: 'loading', data: 0 });
+    const [txCount, setTxCount] = useState({ loadState: 'pending', data: 0 });
 
     const [network] = useContext(NetworkContext);
     const [searchParams, setSearchParams] = useSearchParams();
@@ -166,6 +166,7 @@ function LatestTxCard({ ...data }: RecentTx) {
     const stats = {
         count: txCount.data,
         stats_text: 'Total transactions',
+        loadState: txCount.loadState,
     };
 
     const PaginationWithStatsOrStatsWithLink =

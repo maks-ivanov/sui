@@ -18,6 +18,7 @@ function TabFooter({
     stats?: {
         count: number | string;
         stats_text: string;
+        loadState?: string;
     };
     paging?: number;
     itemsPerPageChange?: Function;
@@ -42,7 +43,8 @@ function TabFooter({
             )}
             {(stats || paging) && (
                 <div className={styles.stats}>
-                    {stats && (
+                    {stats && stats.loadState === 'pending' && <div />}
+                    {stats && stats.loadState === 'loaded' && (
                         <>
                             {typeof stats.count === 'number'
                                 ? numberSuffix(stats.count)
@@ -50,6 +52,9 @@ function TabFooter({
                             {stats.stats_text}
                         </>
                     )}
+
+                    {stats && stats.loadState === 'fail' && <></>}
+
                     {paging && (
                         <div className={styles.pagedropdown}>
                             <select

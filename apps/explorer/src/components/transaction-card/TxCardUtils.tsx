@@ -17,6 +17,7 @@ import {
 } from '@mysten/sui.js';
 import BN from 'bn.js';
 
+import placeholdertheme from '../../styles/placeholder.module.css';
 import { DefaultRpcClient } from '../../utils/api/DefaultRpcClient';
 import { type Network } from '../../utils/api/rpcSetting';
 import { numberSuffix } from '../../utils/numberUtil';
@@ -139,12 +140,36 @@ export const genTableDataFromTxData = (
 // Generate loading table display
 export const loadingTable = {
     data: new Array(15).fill({
-        date: <div className={styles.placeholder} />,
-        txTypes: <div className={styles.placeholder} />,
-        transactionId: <div className={styles.placeholder} />,
-        addresses: <div className={styles.placeholder} />,
-        amounts: <div className={styles.placeholder} />,
-        gas: <div className={styles.placeholder} />,
+        date: (
+            <div
+                className={`${placeholdertheme.placeholder} ${styles.placeholder}`}
+            />
+        ),
+        txTypes: (
+            <div
+                className={`${placeholdertheme.placeholder} ${styles.placeholder}`}
+            />
+        ),
+        transactionId: (
+            <div
+                className={`${placeholdertheme.placeholder} ${styles.placeholder}`}
+            />
+        ),
+        addresses: (
+            <div
+                className={`${placeholdertheme.placeholder} ${styles.placeholder}`}
+            />
+        ),
+        amounts: (
+            <div
+                className={`${placeholdertheme.placeholder} ${styles.placeholder}`}
+            />
+        ),
+        gas: (
+            <div
+                className={`${placeholdertheme.placeholder} ${styles.placeholder}`}
+            />
+        ),
     }),
     columns: [
         {
