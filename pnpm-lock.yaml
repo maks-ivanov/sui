@@ -512,6 +512,21 @@ importers:
       tsup: 6.2.2_typescript@4.8.3
       typescript: 4.8.3
 
+  sdk/wallet-adapter/packages/wallet-standard:
+    specifiers:
+      '@mysten/sui.js': workspace:*
+      '@wallet-standard/features': 0.1.0-alpha.1
+      '@wallet-standard/standard': 0.1.0-alpha.3
+      tsup: ^6.2.2
+      typescript: ^4.8.3
+    dependencies:
+      '@mysten/sui.js': link:../../../typescript
+      '@wallet-standard/features': 0.1.0-alpha.1
+      '@wallet-standard/standard': 0.1.0-alpha.3
+    devDependencies:
+      tsup: 6.2.2_typescript@4.8.3
+      typescript: 4.8.3
+
 packages:
 
   /@adobe/css-tools/4.0.1:
@@ -7083,6 +7098,16 @@ packages:
     dependencies:
       sirv: 2.0.2
     dev: true
+
+  /@wallet-standard/features/0.1.0-alpha.1:
+    resolution: {integrity: sha512-ZM5QYQjfap7bfQcCQHt1fpxO0QdG56UDFTVg89uCIXu+hxJoqAo+i8URkyhAo1DSRsE3SjiZkiKdpeQnZ3XfwA==}
+    dependencies:
+      '@wallet-standard/standard': 0.1.0-alpha.3
+    dev: false
+
+  /@wallet-standard/standard/0.1.0-alpha.3:
+    resolution: {integrity: sha512-XseAI+UuTvGyU9rJBFThD/Deaa7dGoixp6r368zbUX77HZEAGfLE6b+KWsqVlop6Y5W/ewXaCzcwpyw+/R/EpQ==}
+    dev: false
 
   /@webassemblyjs/ast/1.11.1:
     resolution: {integrity: sha512-ukBh14qFLjxTQNTXocdyksN5QdM28S1CxHt2rdskFyL+xFV7VremuBLVbmCePj+URalXBENx/9Lm7lnhihtCSw==}
