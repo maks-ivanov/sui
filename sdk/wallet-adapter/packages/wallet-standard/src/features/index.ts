@@ -6,7 +6,7 @@ import type { SuiSignTransactionFeature } from './suiSignTransaction';
 export type SuiFeatures = SuiSignTransactionFeature | SuiSignAndExecuteTransactionFeature;
 
 /** TODO: docs */
-export type WalletWithSolanaFeatures = WalletWithFeatures<SuiFeatures>;
+export type WalletWithSuiFeatures = WalletWithFeatures<SuiFeatures>;
 
 export * from './suiSignTransaction';
 export * from './suiSignAndExecuteTransaction';
