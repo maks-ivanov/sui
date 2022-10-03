@@ -1,4 +1,6 @@
 .placeholder {
+    @apply rounded-[3px];
+
     background: linear-gradient(
         90deg,
         #ecf1f4 -24.18%,
