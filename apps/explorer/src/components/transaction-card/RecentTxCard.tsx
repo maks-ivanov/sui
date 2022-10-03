@@ -141,7 +141,6 @@ function LatestTxCard({ ...data }: RecentTx) {
         data.txPerPage || NUMBER_OF_TX_PER_PAGE
     );
 
-    const [isLoaded, setIsLoaded] = useState(false);
     const [, setIsCountFound] = useState(false);
     const [results, setResults] = useState(initState);
     const [recentTx, setRecentTx] = useState(loadingTable);
@@ -188,8 +187,6 @@ function LatestTxCard({ ...data }: RecentTx) {
         );
     // update the page index when the user clicks on the pagination buttons
     useEffect(() => {
-        let isMounted = true;
-
         getTransactionCount(network)
             .then((resp: number) => {
                 setTxCount({
@@ -204,6 +201,10 @@ function LatestTxCard({ ...data }: RecentTx) {
                 setTxCount({
                     loadState: 'fail',
                     data: 0,
+                });
+                setResults({
+                    ...initState,
+                    loadState: 'fail',
                 });
 
                 setIsCountFound(false);
@@ -220,9 +221,6 @@ function LatestTxCard({ ...data }: RecentTx) {
 
                     getRecentTransactions(network, count, txPerPage, pg)
                         .then(async (resp: any) => {
-                            if (isMounted) {
-                                setIsLoaded(true);
-                            }
                             setResults({
                                 loadState: 'loaded',
                                 latestTx: resp,
@@ -240,7 +238,6 @@ function LatestTxCard({ ...data }: RecentTx) {
                                 ...initState,
                                 loadState: 'fail',
                             });
-                            setIsLoaded(false);
                             console.error(
                                 'Encountered error when fetching recent transactions',
                                 err
@@ -249,13 +246,9 @@ function LatestTxCard({ ...data }: RecentTx) {
                         });
                 }
             });
-
-        return () => {
-            isMounted = false;
-        };
     }, [network, pageIndex, setSearchParams, txPerPage, truncateLength]);
 
-    if (!isLoaded && results.loadState === 'fail') {
+    if (results.loadState === 'fail') {
         return (
             <ErrorResult
                 id=""
