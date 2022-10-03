@@ -11,7 +11,7 @@ import { useEffect, useState, useContext, useCallback } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 
 import { ReactComponent as ArrowRight } from '../../assets/SVGIcons/12px/ArrowRight.svg';
-import TableCard from '../../components/table/TableCard';
+import TableCard, { type TableType } from '../../components/table/TableCard';
 import TabFooter from '../../components/tabs/TabFooter';
 import Tabs from '../../components/tabs/Tabs';
 import { NetworkContext } from '../../context';
@@ -142,7 +142,7 @@ function LatestTxCard({ ...data }: RecentTx) {
     );
 
     const [results, setResults] = useState(initState);
-    const [recentTx, setRecentTx] = useState(null);
+    const [recentTx, setRecentTx] = useState<null | TableType>(null);
     const [txCount, setTxCount] = useState({ loadState: 'pending', data: 0 });
 
     const [network] = useContext(NetworkContext);
