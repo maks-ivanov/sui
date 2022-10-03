@@ -383,6 +383,7 @@ importers:
       '@mysten/wallet-adapter-react': workspace:*
       '@mysten/wallet-adapter-react-ui': workspace:*
       '@mysten/wallet-adapter-sui-wallet': workspace:*
+      '@mysten/wallet-adapter-wallet-standard': workspace:*
       '@testing-library/jest-dom': ^5.16.4
       '@testing-library/react': ^13.3.0
       '@testing-library/user-event': ^13.5.0
@@ -406,6 +407,7 @@ importers:
       '@mysten/wallet-adapter-react': link:packages/react-providers
       '@mysten/wallet-adapter-react-ui': link:packages/ui
       '@mysten/wallet-adapter-sui-wallet': link:packages/adapters/sui-wallet
+      '@mysten/wallet-adapter-wallet-standard': link:packages/adapters/wallet-standard-adapter
       '@testing-library/jest-dom': 5.16.5
       '@testing-library/react': 13.3.0_biqbaboplfbrettd7655fr4n2y
       '@testing-library/user-event': 13.5.0
@@ -466,6 +468,23 @@ importers:
     dependencies:
       '@mysten/sui.js': link:../../../../typescript
       '@mysten/wallet-adapter-base': link:../base-adapter
+    devDependencies:
+      tsup: 6.2.2_typescript@4.8.3
+      typescript: 4.8.3
+
+  sdk/wallet-adapter/packages/adapters/wallet-standard-adapter:
+    specifiers:
+      '@mysten/sui.js': workspace:*
+      '@mysten/wallet-adapter-base': workspace:*
+      '@wallet-standard/app': 0.1.0-alpha.3
+      '@wallet-standard/standard': 0.1.0-alpha.3
+      tsup: ^6.2.2
+      typescript: ^4.8.3
+    dependencies:
+      '@mysten/sui.js': link:../../../../typescript
+      '@mysten/wallet-adapter-base': link:../base-adapter
+      '@wallet-standard/app': 0.1.0-alpha.3
+      '@wallet-standard/standard': 0.1.0-alpha.3
     devDependencies:
       tsup: 6.2.2_typescript@4.8.3
       typescript: 4.8.3
@@ -7098,6 +7117,12 @@ packages:
     dependencies:
       sirv: 2.0.2
     dev: true
+
+  /@wallet-standard/app/0.1.0-alpha.3:
+    resolution: {integrity: sha512-oV8gTDVUadELe85OAxPSYYQxK8+hs/vaPp9t5UaLzwsCQYIy/+nkczLqqZg/xwv26BTJCATS+qRNK4S9DANGIg==}
+    dependencies:
+      '@wallet-standard/standard': 0.1.0-alpha.3
+    dev: false
 
   /@wallet-standard/features/0.1.0-alpha.1:
     resolution: {integrity: sha512-ZM5QYQjfap7bfQcCQHt1fpxO0QdG56UDFTVg89uCIXu+hxJoqAo+i8URkyhAo1DSRsE3SjiZkiKdpeQnZ3XfwA==}
