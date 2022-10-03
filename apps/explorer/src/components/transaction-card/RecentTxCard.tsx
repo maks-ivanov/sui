@@ -141,7 +141,6 @@ function LatestTxCard({ ...data }: RecentTx) {
         data.txPerPage || NUMBER_OF_TX_PER_PAGE
     );
 
-    const [, setIsCountFound] = useState(false);
     const [results, setResults] = useState(initState);
     const [recentTx, setRecentTx] = useState(loadingTable);
     const [txCount, setTxCount] = useState({ loadState: 'pending', data: 0 });
@@ -194,7 +193,6 @@ function LatestTxCard({ ...data }: RecentTx) {
                     data: resp,
                 });
 
-                setIsCountFound(true);
                 return resp;
             })
             .catch((err) => {
@@ -207,14 +205,14 @@ function LatestTxCard({ ...data }: RecentTx) {
                     loadState: 'fail',
                 });
 
-                setIsCountFound(false);
                 console.error(
                     'Encountered error when fetching transaction count',
                     err
                 );
+                return null;
             })
-            .then((count) => {
-                if (typeof count === 'number') {
+            .then((count: number | null) => {
+                if (count) {
                     // If pageIndex is greater than maxTxPage, set to maxTxPage
                     const maxTxPage = Math.ceil(count / txPerPage);
                     const pg = pageIndex > maxTxPage ? maxTxPage : pageIndex;
