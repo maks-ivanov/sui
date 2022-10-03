@@ -278,7 +278,7 @@ function LatestTxCard({ ...data }: RecentTx) {
                                 'Gas',
                             ]}
                             colWidths={[
-                                '65.55px',
+                                '85px',
                                 '80px',
                                 '90px',
                                 '16px',

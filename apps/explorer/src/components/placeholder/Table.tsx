@@ -39,7 +39,5 @@ export default function PlaceholderTable({
         })),
     };
 
-    console.log(loadingTable);
-
     return <TableCard tabledata={loadingTable} />;
 }
