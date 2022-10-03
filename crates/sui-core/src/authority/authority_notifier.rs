@@ -211,7 +211,7 @@ impl TransactionNotifierTicket {
     pub fn seq(&self) -> u64 {
         self.seq
     }
-    pub fn notify(&mut self) {
+    pub fn notify(self) {
         let mut inner = self.transaction_notifier.inner.lock();
         inner.live_tickets.remove(&self.seq);
 
