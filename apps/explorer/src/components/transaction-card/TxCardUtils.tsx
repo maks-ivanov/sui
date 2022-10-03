@@ -17,7 +17,6 @@ import {
 } from '@mysten/sui.js';
 import BN from 'bn.js';
 
-import placeholdertheme from '../../styles/placeholder.module.css';
 import { DefaultRpcClient } from '../../utils/api/DefaultRpcClient';
 import { type Network } from '../../utils/api/rpcSetting';
 import { numberSuffix } from '../../utils/numberUtil';
@@ -135,68 +134,6 @@ export const genTableDataFromTxData = (
             },
         ],
     };
-};
-
-// Generate loading table display
-export const loadingTable = {
-    data: new Array(15).fill({
-        date: (
-            <div
-                className={`${placeholdertheme.placeholder} ${styles.placeholder}`}
-            />
-        ),
-        txTypes: (
-            <div
-                className={`${placeholdertheme.placeholder} ${styles.placeholder}`}
-            />
-        ),
-        transactionId: (
-            <div
-                className={`${placeholdertheme.placeholder} ${styles.placeholder}`}
-            />
-        ),
-        addresses: (
-            <div
-                className={`${placeholdertheme.placeholder} ${styles.placeholder}`}
-            />
-        ),
-        amounts: (
-            <div
-                className={`${placeholdertheme.placeholder} ${styles.placeholder}`}
-            />
-        ),
-        gas: (
-            <div
-                className={`${placeholdertheme.placeholder} ${styles.placeholder}`}
-            />
-        ),
-    }),
-    columns: [
-        {
-            headerLabel: 'Time',
-            accessorKey: 'date',
-        },
-        {
-            headerLabel: 'Type',
-            accessorKey: 'txTypes',
-        },
-        {
-            headerLabel: 'Transaction ID',
-            accessorKey: 'transactionId',
-        },
-        {
-            headerLabel: 'Addresses',
-            accessorKey: 'addresses',
-        },
-        {
-            headerLabel: 'Amount',
-            accessorKey: 'amounts',
-        },
-        {
-            headerLabel: 'Gas',
-            accessorKey: 'gas',
-        },
-    ],
 };
 
 export const getDataOnTxDigests = (

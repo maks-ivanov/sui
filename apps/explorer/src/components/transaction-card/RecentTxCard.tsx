@@ -23,11 +23,11 @@ import { IS_STATIC_ENV } from '../../utils/envUtil';
 import { getAllMockTransaction } from '../../utils/static/searchUtil';
 import ErrorResult from '../error-result/ErrorResult';
 import Pagination from '../pagination/Pagination';
+import PlaceholderTable from '../placeholder/Table';
 import {
     type TxnData,
     genTableDataFromTxData,
     getDataOnTxDigests,
-    loadingTable,
 } from './TxCardUtils';
 
 import styles from './RecentTxCard.module.css';
@@ -142,7 +142,7 @@ function LatestTxCard({ ...data }: RecentTx) {
     );
 
     const [results, setResults] = useState(initState);
-    const [recentTx, setRecentTx] = useState(loadingTable);
+    const [recentTx, setRecentTx] = useState(null);
     const [txCount, setTxCount] = useState({ loadState: 'pending', data: 0 });
 
     const [network] = useContext(NetworkContext);
@@ -263,7 +263,30 @@ function LatestTxCard({ ...data }: RecentTx) {
         <div className={cl(styles.txlatestresults, styles[paginationtype])}>
             <Tabs selected={defaultActiveTab}>
                 <div title="Transactions">
-                    <TableCard tabledata={recentTx} />
+                    {recentTx ? (
+                        <TableCard tabledata={recentTx} />
+                    ) : (
+                        <PlaceholderTable
+                            rowCount={15}
+                            rowHeight="16px"
+                            colHeadings={[
+                                'Time',
+                                'Type',
+                                'Transaction ID',
+                                'Addresses',
+                                'Amount',
+                                'Gas',
+                            ]}
+                            colWidths={[
+                                '65.55px',
+                                '80px',
+                                '90px',
+                                '16px',
+                                '16px',
+                                '16px',
+                            ]}
+                        />
+                    )}
                     {paginationtype !== 'none' &&
                         PaginationWithStatsOrStatsWithLink}
                 </div>
