@@ -476,6 +476,7 @@ importers:
     specifiers:
       '@mysten/sui.js': workspace:*
       '@mysten/wallet-adapter-base': workspace:*
+      '@mysten/wallet-standard': workspace:*
       '@wallet-standard/app': 0.1.0-alpha.3
       '@wallet-standard/standard': 0.1.0-alpha.3
       tsup: ^6.2.2
@@ -483,6 +484,7 @@ importers:
     dependencies:
       '@mysten/sui.js': link:../../../../typescript
       '@mysten/wallet-adapter-base': link:../base-adapter
+      '@mysten/wallet-standard': link:../../wallet-standard
       '@wallet-standard/app': 0.1.0-alpha.3
       '@wallet-standard/standard': 0.1.0-alpha.3
     devDependencies:

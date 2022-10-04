@@ -27,12 +27,12 @@ export interface WalletAdapter {
   getAccounts: () => Promise<SuiAddress[]>;
 
   /** @deprecated Prefer `signAndExecuteTransaction` when available. */
-  executeMoveCall: (
+  executeMoveCall?: (
     transaction: MoveCallTransaction
   ) => Promise<SuiTransactionResponse>;
 
   /** @deprecated Prefer `signAndExecuteTransaction` when available. */
-  executeSerializedMoveCall: (
+  executeSerializedMoveCall?: (
     transactionBytes: Uint8Array
   ) => Promise<SuiTransactionResponse>;
 }

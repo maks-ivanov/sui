@@ -8,11 +8,11 @@ import type {
   SuiTransactionResponse,
   SignableTransaction,
 } from "@mysten/sui.js";
-import { WalletCapabilities } from "@mysten/wallet-adapter-base";
+import { WalletAdapter as BaseWalletAdapter } from "@mysten/wallet-adapter-base";
 import { Wallet, WalletContext } from "./useWallet";
 
 export interface WalletAdapter {
-  adapter: WalletCapabilities;
+  adapter: BaseWalletAdapter;
 }
 
 export interface WalletProviderProps {

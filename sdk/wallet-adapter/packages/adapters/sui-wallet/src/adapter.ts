@@ -7,7 +7,7 @@ import {
   SuiAddress,
   SuiTransactionResponse,
 } from "@mysten/sui.js";
-import { WalletCapabilities } from "@mysten/wallet-adapter-base";
+import { WalletAdapter } from "@mysten/wallet-adapter-base";
 
 const ALL_PERMISSION_TYPES = ["viewAccount", "suggestTransactions"] as const;
 type AllPermissionsType = typeof ALL_PERMISSION_TYPES;
@@ -35,7 +35,7 @@ interface SuiWalletWindow {
 declare const window: SuiWalletWindow;
 
 // Stored as state somewhere (Probably in a place with generics )
-export class SuiWalletAdapter implements WalletCapabilities {
+export class SuiWalletAdapter implements WalletAdapter {
   connecting: boolean;
   connected: boolean;
 
