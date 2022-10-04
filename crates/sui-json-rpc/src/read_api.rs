@@ -4,7 +4,7 @@
 use std::collections::BTreeMap;
 use std::sync::Arc;
 
-use anyhow::{anyhow, bail, ensure};
+use anyhow::anyhow;
 use async_trait::async_trait;
 use jsonrpsee::core::RpcResult;
 use jsonrpsee_core::server::rpc_module::RpcModule;
@@ -261,7 +261,10 @@ impl RpcFullNodeReadApiServer for FullNodeApi {
         limit: Option<usize>,
     ) -> RpcResult<TransactionsPage> {
         let limit = limit.unwrap_or(MAX_RESULT_SIZE);
-        ensure!(limit > 0, "Page result limit must be larger then 0.");
+
+        if limit == 0 {
+            Err(anyhow!("Page result limit must be larger then 0."))?;
+        }
 
         // Retrieve 1 extra item for next cursor
         let mut data = self

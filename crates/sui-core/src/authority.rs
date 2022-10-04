@@ -29,8 +29,8 @@ use tap::TapFallible;
 use thiserror::Error;
 use tokio::sync::broadcast::error::RecvError;
 use tokio::sync::mpsc::Sender;
-use tracing::Instrument;
 use tracing::{debug, error, instrument, warn};
+use tracing::{trace, Instrument};
 use typed_store::Map;
 
 pub use authority_store::{
