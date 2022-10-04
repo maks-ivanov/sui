@@ -1,3 +1,6 @@
+// Copyright (c) 2022, Mysten Labs, Inc.
+// SPDX-License-Identifier: Apache-2.0
+
 import { WalletAdapterProvider } from "@mysten/wallet-adapter-base";
 import {
   isStandardWalletAdapterCompatibleWallet,
@@ -22,6 +25,8 @@ export class WalletStandardAdapterProvider implements WalletAdapterProvider {
     this.#wallets.on("unregister", () => {
       console.log("un-registered");
     });
+
+    console.log(this.#wallets.get());
   }
 
   get() {

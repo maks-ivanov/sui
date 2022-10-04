@@ -1,10 +1,12 @@
 // Copyright (c) 2022, Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { SignableTransaction } from "@mysten/sui.js";
+import type {
+  SignableTransaction,
+  SuiTransactionResponse,
+} from "@mysten/sui.js";
 import type {
   SignAndSendTransactionInput,
-  SignAndSendTransactionOutput,
 } from "@wallet-standard/features";
 
 /** TODO: docs */
@@ -30,8 +32,8 @@ export type SuiSignAndExecuteTransactionVersion = "1.0.0";
 
 /** TODO: docs */
 export type SuiSignAndExecuteTransactionMethod = (
-  ...inputs: SuiSignAndExecuteTransactionInput[]
-) => Promise<SuiSignAndExecuteTransactionOutput[]>;
+  input: SuiSignAndExecuteTransactionInput
+) => Promise<SuiSignAndExecuteTransactionOutput>;
 
 /** Input for signing and sending transactions. */
 export interface SuiSignAndExecuteTransactionInput
@@ -43,7 +45,7 @@ export interface SuiSignAndExecuteTransactionInput
 
 /** Output of signing and sending transactions. */
 export interface SuiSignAndExecuteTransactionOutput
-  extends SignAndSendTransactionOutput {}
+  extends SuiTransactionResponse {}
 
 // TODO: figure out what options are actually needed
 /** Options for signing and sending transactions. */

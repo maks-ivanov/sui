@@ -138,6 +138,7 @@ importers:
     specifiers:
       '@metamask/browser-passworder': ^3.0.0
       '@mysten/sui.js': workspace:*
+      '@mysten/wallet-standard': workspace:*
       '@popperjs/core': ^2.11.6
       '@reduxjs/toolkit': ^1.8.3
       '@scure/bip32': ^1.1.0
@@ -151,6 +152,9 @@ importers:
       '@types/webpack': ^5.28.0
       '@typescript-eslint/eslint-plugin': ^5.38.1
       '@typescript-eslint/parser': ^5.38.1
+      '@wallet-standard/features': 0.1.0-alpha.1
+      '@wallet-standard/standard': 0.1.0-alpha.3
+      '@wallet-standard/util': 0.1.0-alpha.3
       bootstrap-icons: ^1.9.1
       buffer: ^6.0.3
       classnames: ^2.3.1
@@ -206,10 +210,14 @@ importers:
     dependencies:
       '@metamask/browser-passworder': 3.0.0
       '@mysten/sui.js': link:../../sdk/typescript
+      '@mysten/wallet-standard': link:../../sdk/wallet-adapter/packages/wallet-standard
       '@popperjs/core': 2.11.6
       '@reduxjs/toolkit': 1.8.5_kkwg4cbsojnjnupd3btipussee
       '@scure/bip32': 1.1.0
       '@scure/bip39': 1.1.0
+      '@wallet-standard/features': 0.1.0-alpha.1
+      '@wallet-standard/standard': 0.1.0-alpha.3
+      '@wallet-standard/util': 0.1.0-alpha.3
       bootstrap-icons: 1.9.1
       buffer: 6.0.3
       classnames: 2.3.1
@@ -7136,6 +7144,12 @@ packages:
     resolution: {integrity: sha512-XseAI+UuTvGyU9rJBFThD/Deaa7dGoixp6r368zbUX77HZEAGfLE6b+KWsqVlop6Y5W/ewXaCzcwpyw+/R/EpQ==}
     dev: false
 
+  /@wallet-standard/util/0.1.0-alpha.3:
+    resolution: {integrity: sha512-0YUF875DRifHbKnFDXte/jEBSC5LUD60pTfXGrfKtzgc7+gtcnRyJVsXKVNhTfqx4aj59VC1zC6RAWyLGmS8Hg==}
+    dependencies:
+      '@wallet-standard/standard': 0.1.0-alpha.3
+    dev: false
+
   /@webassemblyjs/ast/1.11.1:
     resolution: {integrity: sha512-ukBh14qFLjxTQNTXocdyksN5QdM28S1CxHt2rdskFyL+xFV7VremuBLVbmCePj+URalXBENx/9Lm7lnhihtCSw==}
     dependencies:
@@ -8110,7 +8124,7 @@ packages:
   /axios/0.21.4_debug@4.3.2:
     resolution: {integrity: sha512-ut5vewkiu8jjGBdqpM44XxjuCjq9LAKeHVmoVfHVzy8eHgxxq8SbAVQNovDA8mVi05kP0Ea/n/UzcSHcTJQfNg==}
     dependencies:
-      follow-redirects: 1.15.1_debug@4.3.2
+      follow-redirects: 1.15.1
     transitivePeerDependencies:
       - debug
     dev: true
@@ -8118,7 +8132,7 @@ packages:
   /axios/0.25.0:
     resolution: {integrity: sha512-cD8FOb0tRH3uuEe6+evtAbgJtfxr7ly3fQjYcMcuPlgkwVS9xboaVIpcDV+cYQe+yGykgwZCs1pzjntcGa6l5g==}
     dependencies:
-      follow-redirects: 1.15.1_debug@4.3.2
+      follow-redirects: 1.15.1
     transitivePeerDependencies:
       - debug
     dev: true
@@ -8126,7 +8140,7 @@ packages:
   /axios/0.27.2:
     resolution: {integrity: sha512-t+yRIyySRTp/wua5xEr+z1q60QmLq8ABsS5O9Me1AsE5dfKqgnCFzwiCZZ/cGNd1lq4/7akDWMxdhVlucjmnOQ==}
     dependencies:
-      follow-redirects: 1.15.1_debug@4.3.2
+      follow-redirects: 1.15.1
       form-data: 4.0.0
     transitivePeerDependencies:
       - debug
@@ -12263,7 +12277,7 @@ packages:
       readable-stream: 2.3.7
     dev: true
 
-  /follow-redirects/1.15.1_debug@4.3.2:
+  /follow-redirects/1.15.1:
     resolution: {integrity: sha512-yLAMQs+k0b2m7cVxpS1VKJVvoz7SS9Td1zss3XRwXj+ZDH00RJgnuLx7E44wx02kQLrdM3aOOy+FpzS7+8OizA==}
     engines: {node: '>=4.0'}
     peerDependencies:
@@ -12271,8 +12285,6 @@ packages:
     peerDependenciesMeta:
       debug:
         optional: true
-    dependencies:
-      debug: 4.3.2
     dev: true
 
   /for-in/1.0.2:
@@ -19801,7 +19813,7 @@ packages:
       schema-utils: 3.1.1
       serialize-javascript: 6.0.0
       terser: 5.14.2
-      webpack: 5.74.0
+      webpack: 5.74.0_webpack-cli@4.10.0
     dev: true
 
   /terser/4.8.1:
