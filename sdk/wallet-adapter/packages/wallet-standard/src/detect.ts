@@ -1,6 +1,8 @@
 // Copyright (c) 2022, Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+// TODO: Probably move this to wallet-standard-adapter
+
 import { ConnectFeature } from "@wallet-standard/features";
 import { Wallet, WalletWithFeatures } from "@wallet-standard/standard";
 import { SuiSignAndExecuteTransactionFeature } from "./features";

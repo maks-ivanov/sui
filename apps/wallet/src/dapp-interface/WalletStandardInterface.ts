@@ -1,18 +1,17 @@
 // Copyright (c) 2022, Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { ConnectFeature, ConnectMethod } from '@wallet-standard/features';
 import {
-    SuiSignAndExecuteTransactionFeature,
-    SuiSignAndExecuteTransactionMethod,
     SUI_CHAINS,
+    ReadonlyWalletAccount,
+    type SuiSignAndExecuteTransactionFeature,
+    type SuiSignAndExecuteTransactionMethod,
+    type ConnectFeature,
+    type ConnectMethod,
+    type Wallet,
+    type WalletEventNames,
+    type WalletEvents,
 } from '@mysten/wallet-standard';
-import type {
-    Wallet,
-    WalletEventNames,
-    WalletEvents,
-} from '@wallet-standard/standard';
-import { ReadonlyWalletAccount } from '@wallet-standard/util';
 import { filter, map, type Observable } from 'rxjs';
 
 import { type Payload } from '_payloads';

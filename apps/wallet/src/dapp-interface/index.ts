@@ -1,7 +1,7 @@
 // Copyright (c) 2022, Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { WalletsWindow } from '@wallet-standard/standard';
+import type { WalletsWindow } from '@mysten/wallet-standard';
 
 import { DAppInterface } from './DAppInterface';
 import { SuiWallet } from './WalletStandardInterface';
