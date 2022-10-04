@@ -8,8 +8,9 @@ import type {
   SuiTransactionResponse,
   SignableTransaction,
 } from "@mysten/sui.js";
-import { WalletAdapter as BaseWalletAdapter } from "@mysten/wallet-adapter-base";
+import { WalletAdapter as BaseWalletAdapter, WalletAdapterList } from "@mysten/wallet-adapter-base";
 import { Wallet, WalletContext } from "./useWallet";
+import { useWalletAdapters } from "./useWalletAdapters";
 
 export interface WalletAdapter {
   adapter: BaseWalletAdapter;
@@ -17,14 +18,16 @@ export interface WalletAdapter {
 
 export interface WalletProviderProps {
   children: ReactNode;
-  // Pass this through props to add list of supported wallets
-  supportedWallets: Wallet[];
+  adapters: WalletAdapterList;
 }
 
 export const WalletProvider: FC<WalletProviderProps> = ({
   children,
-  supportedWallets,
+  adapters,
 }) => {
+  const resolvedWalletAdapters = useWalletAdapters(adapters);
+  console.log(resolvedWalletAdapters);
+
   // Wallet that user chose
   const [wallet, setWallet] = useState<WalletAdapter | null>(null);
   const [connected, setConnected] = useState(false);
@@ -65,15 +68,15 @@ export const WalletProvider: FC<WalletProviderProps> = ({
   // Changes the selected wallet
   const choose = useCallback(
     (name: string) => {
-      let newWallet = supportedWallets.find(
-        (wallet) => wallet.adapter.name === name
-      );
-      if (newWallet) {
-        setWalletAndUpdateStorage(newWallet);
-      }
-      connect();
+      // let newWallet = supportedWallets.find(
+      //   (wallet) => wallet.adapter.name === name
+      // );
+      // if (newWallet) {
+      //   setWalletAndUpdateStorage(newWallet);
+      // }
+      // connect();
     },
-    [supportedWallets, connect, setWalletAndUpdateStorage]
+    [resolvedWalletAdapters, connect, setWalletAndUpdateStorage]
   );
 
   // If the wallet is null, check if there isn't anything in local storage
@@ -99,6 +102,11 @@ export const WalletProvider: FC<WalletProviderProps> = ({
     transaction: MoveCallTransaction
   ): Promise<SuiTransactionResponse> => {
     if (wallet == null) throw Error("Wallet Not Connected");
+    if (!wallet.adapter.executeMoveCall) {
+      throw new Error(
+        'Wallet does not support "executeMoveCall" method'
+      );
+    }
     return await wallet.adapter.executeMoveCall(transaction);
   };
 
@@ -107,6 +115,11 @@ export const WalletProvider: FC<WalletProviderProps> = ({
     transactionBytes: Uint8Array
   ): Promise<SuiTransactionResponse> => {
     if (wallet == null) throw Error("Wallet Not Connected");
+    if (!wallet.adapter.executeSerializedMoveCall) {
+      throw new Error(
+        'Wallet does not support "executeSerializedMoveCall" method'
+      );
+    }
     return await wallet.adapter.executeSerializedMoveCall(transactionBytes);
   };
 
@@ -135,7 +148,7 @@ export const WalletProvider: FC<WalletProviderProps> = ({
   return (
     <WalletContext.Provider
       value={{
-        supportedWallets,
+        adapters: resolvedWalletAdapters,
         wallet,
         connecting: connecting,
         connected: connected,

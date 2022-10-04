@@ -480,7 +480,7 @@ importers:
       '@mysten/wallet-adapter-base': workspace:*
       '@mysten/wallet-standard': workspace:*
       '@wallet-standard/app': 0.1.0-alpha.3
-      '@wallet-standard/standard': 0.1.0-alpha.3
+      mitt: ^3.0.0
       tsup: ^6.2.2
       typescript: ^4.8.3
     dependencies:
@@ -488,7 +488,7 @@ importers:
       '@mysten/wallet-adapter-base': link:../base-adapter
       '@mysten/wallet-standard': link:../../wallet-standard
       '@wallet-standard/app': 0.1.0-alpha.3
-      '@wallet-standard/standard': 0.1.0-alpha.3
+      mitt: 3.0.0
     devDependencies:
       tsup: 6.2.2_typescript@4.8.3
       typescript: 4.8.3
@@ -15352,6 +15352,10 @@ packages:
       stream-each: 1.2.3
       through2: 2.0.5
     dev: true
+
+  /mitt/3.0.0:
+    resolution: {integrity: sha512-7dX2/10ITVyqh4aOSVI9gdape+t9l2/8QxHrFmUXu4EEUpdlxl6RudZUPZoc+zuY2hk1j7XxVroIVIan/pD/SQ==}
+    dev: false
 
   /mixin-deep/1.3.2:
     resolution: {integrity: sha512-WRoDn//mXBiJ1H40rqa3vH0toePwSsGb45iInWlTySa+Uu4k3tYUSxa2v1KqAiLtvlrSzaExqS1gtk96A9zvEA==}

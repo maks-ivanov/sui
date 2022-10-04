@@ -3,30 +3,35 @@
 
 import { WalletAdapterProvider } from "@mysten/wallet-adapter-base";
 import {
+  Wallets,
   isStandardWalletAdapterCompatibleWallet,
   StandardWalletAdapterWallet,
 } from "@mysten/wallet-standard";
 import { initialize } from "@wallet-standard/app";
-import { Wallets } from "@wallet-standard/standard";
 import { StandardWalletAdapter } from "./StandardWalletAdapter";
+import mitt, { Emitter } from "mitt";
+
+type Events = {
+  changed: void;
+};
 
 export class WalletStandardAdapterProvider implements WalletAdapterProvider {
   #wallets: Wallets;
   #adapters: Map<StandardWalletAdapterWallet, StandardWalletAdapter>;
+  #events: Emitter<Events>;
 
   constructor() {
     this.#adapters = new Map();
     this.#wallets = initialize();
+    this.#events = mitt();
 
     this.#wallets.on("register", () => {
-      console.log("registered");
+      this.#events.emit("changed");
     });
 
     this.#wallets.on("unregister", () => {
-      console.log("un-registered");
+      this.#events.emit("changed");
     });
-
-    console.log(this.#wallets.get());
   }
 
   get() {
@@ -43,7 +48,13 @@ export class WalletStandardAdapterProvider implements WalletAdapterProvider {
     return [...this.#adapters.values()];
   }
 
-  on(eventName: "changed") {
-    return () => {};
+  on<T extends keyof Events>(
+    eventName: T,
+    callback: (data: Events[T]) => void
+  ) {
+    this.#events.on(eventName, callback);
+    return () => {
+      this.#events.off(eventName, callback);
+    };
   }
 }

@@ -14,35 +14,29 @@ import {
 } from '@mysten/wallet-standard';
 import { filter, map, type Observable } from 'rxjs';
 
+import icon from '../manifest/icons/sui-icon-128.png';
+import { mapToPromise } from './utils';
+import { createMessage } from '_messages';
+import { WindowMessageStream } from '_messaging/WindowMessageStream';
 import { type Payload } from '_payloads';
+import {
+    type AcquirePermissionsRequest,
+    type AcquirePermissionsResponse,
+    ALL_PERMISSION_TYPES,
+} from '_payloads/permissions';
+
+import type { GetAccount } from '_payloads/account/GetAccount';
+import type { GetAccountResponse } from '_payloads/account/GetAccountResponse';
 import type {
     ExecuteTransactionRequest,
     ExecuteTransactionResponse,
 } from '_payloads/transactions';
-import {
-    PermissionType,
-    HasPermissionsRequest,
-    HasPermissionsResponse,
-    AcquirePermissionsRequest,
-    AcquirePermissionsResponse,
-    ALL_PERMISSION_TYPES,
-} from '_payloads/permissions';
-import { createMessage } from '_messages';
-import { WindowMessageStream } from '_messaging/WindowMessageStream';
-import type { GetAccount } from '_payloads/account/GetAccount';
-import type { GetAccountResponse } from '_payloads/account/GetAccountResponse';
 
-import icon from '../manifest/icons/sui-icon-128.png';
-
-console.log(icon);
-
-import { mapToPromise } from './utils';
-
+// TODO: rebuild event interface with Mitt.
 export class SuiWallet implements Wallet {
     readonly #listeners: { [E in WalletEventNames]?: WalletEvents[E][] } = {};
     readonly #version = '1.0.0' as const;
     readonly #name = 'Sui Wallet' as const;
-    readonly #icon = 'icon';
     #account: ReadonlyWalletAccount | null;
     #messagesStream: WindowMessageStream;
 
@@ -56,6 +50,7 @@ export class SuiWallet implements Wallet {
 
     get icon() {
         // TODO: Improve this with ideally a vector logo.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return icon as any;
     }
 

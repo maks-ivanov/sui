@@ -2,26 +2,23 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import "./App.css";
+import { useMemo } from "react";
 import { Wallet, WalletProvider } from "@mysten/wallet-adapter-react";
 import { SuiWalletAdapter } from "@mysten/wallet-adapter-all-wallets";
 import { WalletStandardAdapterProvider } from "@mysten/wallet-adapter-wallet-standard";
 import { WalletWrapper } from "@mysten/wallet-adapter-react-ui";
 import { TestButton } from "./TestButton";
 
-const provider = new WalletStandardAdapterProvider();
-console.log(provider.get());
-
 function App() {
-  const supportedWallets: Wallet[] = [
-    {
-      adapter: new SuiWalletAdapter(),
-    },
-  ];
+  const adapters = useMemo(
+    () => [new SuiWalletAdapter(), new WalletStandardAdapterProvider()],
+    []
+  );
 
   return (
     <div className="App">
       <header className="App-header">
-        <WalletProvider supportedWallets={supportedWallets}>
+        <WalletProvider adapters={adapters}>
           <TestButton />
           <WalletWrapper />
         </WalletProvider>

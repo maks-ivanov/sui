@@ -3,6 +3,7 @@
 
 import { filter, map } from 'rxjs';
 
+import { mapToPromise } from './utils';
 import { createMessage } from '_messages';
 import { WindowMessageStream } from '_messaging/WindowMessageStream';
 import { ALL_PERMISSION_TYPES } from '_payloads/permissions';
@@ -27,8 +28,6 @@ import type {
     ExecuteTransactionResponse,
 } from '_payloads/transactions';
 import type { Observable } from 'rxjs';
-
-import { mapToPromise } from './utils';
 
 export class DAppInterface {
     private _messagesStream: WindowMessageStream;

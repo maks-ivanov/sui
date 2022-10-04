@@ -9,12 +9,19 @@ export interface StandardWalletAdapterConfig {
 }
 
 export class StandardWalletAdapter implements WalletAdapter {
-  name = "";
   connected = false;
   connecting = false;
+
+  #wallet: StandardWalletAdapterWallet;
+
   constructor({ wallet }: StandardWalletAdapterConfig) {
-    console.log(wallet);
+    this.#wallet = wallet;
   }
+
+  get name() {
+    return this.#wallet.name;
+  }
+
   async getAccounts() {
     return [];
   }

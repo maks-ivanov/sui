@@ -47,5 +47,37 @@ export interface WalletAdapterProvider {
   /** Get a list of wallet adapters from this provider. */
   get(): WalletAdapter[];
   /** Detect changes to the list of wallet adapters. */
-  on(eventName: "changed"): WalletAdapterProviderUnsubscribe;
+  on(
+    eventName: "changed",
+    callback: () => void
+  ): WalletAdapterProviderUnsubscribe;
+}
+
+export type WalletAdapterOrProvider = WalletAdapterProvider | WalletAdapter;
+export type WalletAdapterList = WalletAdapterOrProvider[];
+
+export function isWalletAdapter(
+  wallet: WalletAdapterOrProvider
+): wallet is WalletAdapter {
+  return "connect" in wallet;
+}
+
+export function isWalletProvider(
+  wallet: WalletAdapterOrProvider
+): wallet is WalletAdapterProvider {
+  return !isWalletAdapter(wallet);
+}
+
+/**
+ * Takes an array of wallet adapters and providers, and resolves it to a
+ * flat list of wallet adapters.
+ */
+export function resolveAdapters(adapterAndProviders: WalletAdapterList) {
+  return adapterAndProviders.flatMap((adapter) => {
+    if (isWalletProvider(adapter)) {
+      return adapter.get();
+    }
+
+    return adapter;
+  });
 }

@@ -29,7 +29,7 @@ export function ConnectWalletModal(props: ConnectWalletButtonProps) {
     setOpen(false);
   };
 
-  const { supportedWallets, wallet, select, connecting } = useWallet();
+  const { adapters, wallet, select, connecting } = useWallet();
 
   const handleConnect = (walletName: string) => {
     select(walletName);
@@ -80,12 +80,12 @@ export function ConnectWalletModal(props: ConnectWalletButtonProps) {
                     Select Wallet
                   </Typography>
                   <List>
-                    {supportedWallets.map((w, i) => (
+                    {adapters.map((w, i) => (
                       <ListItemButton
                         key={i}
-                        onClick={() => handleConnect(w.adapter.name)}
+                        onClick={() => handleConnect(w.name)}
                       >
-                        <ListItemText primary={w.adapter.name} />
+                        <ListItemText primary={w.name} />
                       </ListItemButton>
                     ))}
                   </List>

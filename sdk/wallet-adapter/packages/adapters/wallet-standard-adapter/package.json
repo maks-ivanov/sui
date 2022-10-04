@@ -29,7 +29,7 @@
     "@mysten/wallet-adapter-base": "workspace:*",
     "@mysten/wallet-standard": "workspace:*",
     "@wallet-standard/app": "0.1.0-alpha.3",
-    "@wallet-standard/standard": "0.1.0-alpha.3"
+    "mitt": "^3.0.0"
   },
   "devDependencies": {
     "tsup": "^6.2.2",

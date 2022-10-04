@@ -58,7 +58,7 @@ export class SuiWalletAdapter implements WalletAdapter {
     return window.suiWallet.signAndExecuteTransaction(transaction);
   }
 
-  name = "Sui Wallet";
+  name = "Sui Wallet (legacy)";
 
   async connect(): Promise<void> {
     this.connecting = true;
