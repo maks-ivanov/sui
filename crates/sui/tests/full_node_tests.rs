@@ -31,7 +31,7 @@ use sui_sdk::{ClientType, SuiClient};
 use sui_swarm::memory::Swarm;
 use sui_types::base_types::{ObjectRef, SequenceNumber};
 use sui_types::event::TransferType;
-use sui_types::filter::TransactionQueryCriteria;
+use sui_types::filter::TransactionQuery;
 use sui_types::messages::{
     ExecuteTransactionRequest, ExecuteTransactionRequestType, ExecuteTransactionResponse,
 };
@@ -119,7 +119,7 @@ async fn test_full_node_move_function_index() -> Result<(), anyhow::Error> {
     let txes = node
         .state()
         .get_transactions(
-            TransactionQueryCriteria::MoveFunction {
+            TransactionQuery::MoveFunction {
                 package: package_ref.0,
                 module: Some("counter".to_string()),
                 function: Some("increment".to_string()),
@@ -135,7 +135,7 @@ async fn test_full_node_move_function_index() -> Result<(), anyhow::Error> {
     let txes = node
         .state()
         .get_transactions(
-            TransactionQueryCriteria::MoveFunction {
+            TransactionQuery::MoveFunction {
                 package: package_ref.0,
                 module: None,
                 function: None,
@@ -153,7 +153,7 @@ async fn test_full_node_move_function_index() -> Result<(), anyhow::Error> {
     let txes = node
         .state()
         .get_transactions(
-            TransactionQueryCriteria::MoveFunction {
+            TransactionQuery::MoveFunction {
                 package: package_ref.0,
                 module: Some("counter".to_string()),
                 function: None,
@@ -185,7 +185,7 @@ async fn test_full_node_indexes() -> Result<(), anyhow::Error> {
     let txes = node
         .state()
         .get_transactions(
-            TransactionQueryCriteria::InputObject {
+            TransactionQuery::InputObject {
                 object_id: transferred_object,
             },
             None,
@@ -199,7 +199,7 @@ async fn test_full_node_indexes() -> Result<(), anyhow::Error> {
     let txes = node
         .state()
         .get_transactions(
-            TransactionQueryCriteria::MutatedObject {
+            TransactionQuery::MutatedObject {
                 object_id: transferred_object,
             },
             None,
@@ -212,7 +212,7 @@ async fn test_full_node_indexes() -> Result<(), anyhow::Error> {
     let txes = node
         .state()
         .get_transactions(
-            TransactionQueryCriteria::FromAddress { address: sender },
+            TransactionQuery::FromAddress { address: sender },
             None,
             None,
         )
@@ -223,7 +223,7 @@ async fn test_full_node_indexes() -> Result<(), anyhow::Error> {
     let txes = node
         .state()
         .get_transactions(
-            TransactionQueryCriteria::ToAddress { address: receiver },
+            TransactionQuery::ToAddress { address: receiver },
             None,
             None,
         )
@@ -235,11 +235,7 @@ async fn test_full_node_indexes() -> Result<(), anyhow::Error> {
     // one or more of the sender's objects.
     let txes = node
         .state()
-        .get_transactions(
-            TransactionQueryCriteria::ToAddress { address: sender },
-            None,
-            None,
-        )
+        .get_transactions(TransactionQuery::ToAddress { address: sender }, None, None)
         .await?;
     assert_eq!(txes.len(), 1);
     assert_eq!(txes[0].1, digest);
@@ -248,7 +244,7 @@ async fn test_full_node_indexes() -> Result<(), anyhow::Error> {
     let txes = node
         .state()
         .get_transactions(
-            TransactionQueryCriteria::FromAddress { address: receiver },
+            TransactionQuery::FromAddress { address: receiver },
             None,
             None,
         )
@@ -656,7 +652,7 @@ async fn test_full_node_event_read_api_ok() -> Result<(), anyhow::Error> {
     let txes = node
         .state()
         .get_transactions(
-            TransactionQueryCriteria::InputObject {
+            TransactionQuery::InputObject {
                 object_id: transferred_object,
             },
             None,
