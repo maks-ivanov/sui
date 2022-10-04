@@ -1,7 +1,8 @@
+import { WalletAdapterProvider } from '@mysten/wallet-adapter-base';
 import { initialize } from "@wallet-standard/app";
 import { Wallets } from "@wallet-standard/standard";
 
-export class WalletStandardAdapter {
+export class WalletStandardAdapter implements WalletAdapterProvider {
   #wallets: Wallets;
 
   constructor() {
@@ -16,5 +17,13 @@ export class WalletStandardAdapter {
     });
 
     console.log(this.#wallets.get());
+  }
+
+  get() {
+    return this.#wallets;
+  }
+
+  on(eventName: 'changed') {
+    return () => {};
   }
 }
