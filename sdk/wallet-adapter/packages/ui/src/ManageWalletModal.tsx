@@ -6,8 +6,6 @@ import { useEffect, useState } from "react";
 import { useWallet } from "@mysten/wallet-adapter-react";
 import SettingsIcon from '@mui/icons-material/Settings';
 
-export interface Before {}
-
 export interface ManageWalletButtonProps {}
 
 export function ManageWalletModal(props: ManageWalletButtonProps) {
