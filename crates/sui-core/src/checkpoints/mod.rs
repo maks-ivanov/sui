@@ -349,6 +349,7 @@ impl CheckpointStore {
         sequence_number: CheckpointSequenceNumber,
         transactions: impl Iterator<Item = &'a ExecutionDigests> + Clone,
         effects_store: impl CausalOrder + PendCertificateForExecution,
+        next_epoch_committee: Option<Committee>,
     ) -> SuiResult {
         // Make sure that all transactions in the checkpoint have been executed locally.
         self.check_checkpoint_transactions(transactions.clone(), &effects_store)?;
@@ -362,8 +363,13 @@ impl CheckpointStore {
                 .into_iter(),
         );
 
-        let summary =
-            CheckpointSummary::new(epoch, sequence_number, &ordered_contents, previous_digest);
+        let summary = CheckpointSummary::new(
+            epoch,
+            sequence_number,
+            &ordered_contents,
+            previous_digest,
+            next_epoch_committee,
+        );
 
         let checkpoint = AuthenticatedCheckpoint::Signed(
             SignedCheckpointSummary::new_from_summary(summary, self.name, &*self.secret),
@@ -506,8 +512,10 @@ impl CheckpointStore {
 
         // Send to consensus for sequencing.
         if let Some(sender) = &self.sender {
-            debug!("Send fragment: {} -- {}", self.name, other_name);
+            let seq = fragment.proposer.summary.sequence_number;
+            debug!(cp_seq=?seq, "Sending fragment: {} -- {}", self.name, other_name);
             sender.send_to_consensus(fragment.clone())?;
+            debug!(cp_seq=?seq, "Fragment successfully sent: {} -- {}", self.name, other_name);
         } else {
             return Err(SuiError::from("No consensus sender configured"));
         }

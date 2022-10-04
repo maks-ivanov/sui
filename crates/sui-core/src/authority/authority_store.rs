@@ -337,11 +337,9 @@ impl<S: Eq + Debug + Serialize + for<'de> Deserialize<'de>> SuiDataStore<S> {
     }
 
     /// Get many objects by their (id, version number) key.
-    pub fn get_input_objects(
-        &self,
-        objects: &[InputObjectKind],
-    ) -> Result<Vec<Option<Object>>, SuiError> {
+    pub fn get_input_objects(&self, objects: &[InputObjectKind]) -> Result<Vec<Object>, SuiError> {
         let mut result = Vec::new();
+        let mut errors = Vec::new();
         for kind in objects {
             let obj = match kind {
                 InputObjectKind::MovePackage(id) | InputObjectKind::SharedMoveObject(id) => {
@@ -351,9 +349,16 @@ impl<S: Eq + Debug + Serialize + for<'de> Deserialize<'de>> SuiDataStore<S> {
                     self.get_object_by_key(&objref.0, objref.1)?
                 }
             };
-            result.push(obj);
+            match obj {
+                Some(obj) => result.push(obj),
+                None => errors.push(kind.object_not_found_error()),
+            }
         }
-        Ok(result)
+        if !errors.is_empty() {
+            Err(SuiError::ObjectErrors { errors })
+        } else {
+            Ok(result)
+        }
     }
 
     /// Get many objects by their (id, version number) key.
@@ -361,47 +366,60 @@ impl<S: Eq + Debug + Serialize + for<'de> Deserialize<'de>> SuiDataStore<S> {
         &self,
         digest: &TransactionDigest,
         objects: &[InputObjectKind],
-    ) -> Result<Vec<Option<Object>>, SuiError> {
+    ) -> Result<Vec<Object>, SuiError> {
         let shared_locks: HashMap<_, _> = self.all_shared_locks(digest)?.into_iter().collect();
 
         let mut result = Vec::new();
+        let mut errors = Vec::new();
         for kind in objects {
             let obj = match kind {
                 InputObjectKind::MovePackage(id) => self.get_object(id)?,
                 InputObjectKind::SharedMoveObject(id) => match shared_locks.get(id) {
                     Some(version) => self.get_object_by_key(id, *version)?,
-                    None => None,
+                    None => {
+                        errors.push(SuiError::SharedObjectLockNotSetError);
+                        continue;
+                    }
                 },
                 InputObjectKind::ImmOrOwnedMoveObject(objref) => {
                     self.get_object_by_key(&objref.0, objref.1)?
                 }
             };
-            result.push(obj);
+            match obj {
+                Some(obj) => result.push(obj),
+                None => errors.push(kind.object_not_found_error()),
+            }
         }
-        Ok(result)
+        if !errors.is_empty() {
+            Err(SuiError::ObjectErrors { errors })
+        } else {
+            Ok(result)
+        }
     }
 
-    /// Read a transaction envelope via lock or returns Err(TransactionLockDoesNotExist) if the lock does not exist.
-    pub async fn get_transaction_envelope(
+    /// Get the transaction envelope that currently locks the given object,
+    /// or returns Err(TransactionLockDoesNotExist) if the lock does not exist.
+    pub async fn get_object_locking_transaction(
         &self,
         object_ref: &ObjectRef,
     ) -> SuiResult<Option<TransactionEnvelope<S>>> {
-        let transaction_option = self
-            .lock_service
-            .get_lock(*object_ref)
-            .await?
-            .ok_or(SuiError::TransactionLockDoesNotExist)?;
+        let tx_lock = self.lock_service.get_lock(*object_ref).await?.ok_or(
+            SuiError::ObjectLockUninitialized {
+                obj_ref: *object_ref,
+            },
+        )?;
 
         // Returns None if either no TX with the lock, or TX present but no entry in transactions table.
         // However we retry a couple times because the TX is written after the lock is acquired, so it might
         // just be a race.
-        match transaction_option {
-            Some(tx_digest) => {
+        match tx_lock {
+            Some(lock_info) => {
+                let tx_digest = &lock_info.tx_digest;
                 let mut retry_strategy = ExponentialBackoff::from_millis(2)
                     .factor(10)
                     .map(jitter)
                     .take(3);
-                let mut tx_option = self.tables.transactions.get(&tx_digest)?;
+                let mut tx_option = self.tables.transactions.get(tx_digest)?;
                 while tx_option.is_none() {
                     if let Some(duration) = retry_strategy.next() {
                         // Wait to retry
@@ -411,7 +429,7 @@ impl<S: Eq + Debug + Serialize + for<'de> Deserialize<'de>> SuiDataStore<S> {
                         // No more retries, just quit
                         break;
                     }
-                    tx_option = self.tables.transactions.get(&tx_digest)?;
+                    tx_option = self.tables.transactions.get(tx_digest)?;
                 }
                 Ok(tx_option)
             }
@@ -584,6 +602,7 @@ impl<S: Eq + Debug + Serialize + for<'de> Deserialize<'de>> SuiDataStore<S> {
     /// The lock service is used to atomically acquire locks.
     pub async fn lock_and_write_transaction(
         &self,
+        epoch: EpochId,
         owned_input_objects: &[ObjectRef],
         transaction: TransactionEnvelope<S>,
     ) -> Result<(), SuiError> {
@@ -591,7 +610,7 @@ impl<S: Eq + Debug + Serialize + for<'de> Deserialize<'de>> SuiDataStore<S> {
 
         // Acquire the lock on input objects
         self.lock_service
-            .acquire_locks(owned_input_objects.to_owned(), tx_digest)
+            .acquire_locks(epoch, owned_input_objects.to_owned(), tx_digest)
             .await?;
 
         // TODO: we should have transaction insertion be atomic with lock acquisition, or retry.
@@ -1097,9 +1116,21 @@ impl<S: Eq + Debug + Serialize + for<'de> Deserialize<'de>> SuiDataStore<S> {
         Ok(())
     }
 
+    pub async fn consensus_message_processed(
+        &self,
+        digest: &TransactionDigest,
+    ) -> Result<bool, SuiError> {
+        Ok(self
+            .tables
+            .consensus_message_processed
+            .contains_key(digest)?)
+    }
+
     /// Lock a sequence number for the shared objects of the input transaction. Also update the
     /// last consensus index.
     /// This function must only be called from the consensus task (i.e. from handle_consensus_transaction).
+    ///
+    /// Caller is responsible to call consensus_message_processed before this method
     pub async fn persist_certificate_and_lock_shared_objects(
         &self,
         certificate: CertifiedTransaction,
@@ -1107,16 +1138,6 @@ impl<S: Eq + Debug + Serialize + for<'de> Deserialize<'de>> SuiDataStore<S> {
     ) -> Result<(), SuiError> {
         // Make an iterator to save the certificate.
         let transaction_digest = *certificate.digest();
-
-        // Ensure that we only advance next_object_versions exactly once for every cert received from
-        // consensus.
-        if self
-            .tables
-            .consensus_message_processed
-            .contains_key(&transaction_digest)?
-        {
-            return Ok(());
-        }
 
         // Make an iterator to update the locks of the transaction's shared objects.
         let ids = certificate.shared_input_objects();

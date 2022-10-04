@@ -45,7 +45,7 @@ where
     /// all transactions from the second to the least checkpoint of the epoch. It's called by a
     /// validator that belongs to the committee of the current epoch.
     pub async fn start_epoch_change(&self) -> SuiResult {
-        let checkpoints = self.state.checkpoints.as_ref().unwrap();
+        let checkpoints = &self.state.checkpoints;
         assert!(
             checkpoints.lock().is_ready_to_start_epoch_change(),
             "start_epoch_change called at the wrong checkpoint",
@@ -65,7 +65,7 @@ where
     pub async fn finish_epoch_change(&self) -> SuiResult {
         let epoch = self.state.committee.load().epoch;
         info!(?epoch, "Finishing epoch change");
-        let checkpoints = self.state.checkpoints.as_ref().unwrap();
+        let checkpoints = &self.state.checkpoints;
         {
             let mut checkpoints = checkpoints.lock();
             assert!(
@@ -89,18 +89,7 @@ where
 
         let sui_system_state = self.state.get_sui_system_state_object().await?;
         let next_epoch = epoch + 1;
-        let next_epoch_validators = &sui_system_state.validators.next_epoch_validators;
-        let votes = next_epoch_validators
-            .iter()
-            .map(|metadata| {
-                (
-                    AuthorityPublicKeyBytes::from_bytes(metadata.pubkey_bytes.as_ref())
-                        .expect("Validity of public key bytes should be verified on-chain"),
-                    metadata.next_epoch_stake + metadata.next_epoch_delegation,
-                )
-            })
-            .collect();
-        let new_committee = Committee::new(next_epoch, votes)?;
+        let new_committee = sui_system_state.get_next_epoch_committee();
         debug!(
             ?epoch,
             "New committee for the next epoch: {}", new_committee
@@ -199,9 +188,6 @@ where
         // Resume the validator to start accepting transactions for the new epoch.
         self.state.unhalt_validator();
         info!(?epoch, "Validator unhalted.");
-
-        // Restart the node sync process so it gets the new epoch info.
-        self.respawn_node_sync_process().await;
 
         info!(
             "===== Epoch change finished. We are now at epoch {:?} =====",
@@ -397,7 +383,7 @@ where
                 }
             }
         };
-        let mut checkpoint_store = self.state.checkpoints.as_ref().unwrap().lock();
+        let mut checkpoint_store = self.state.checkpoints.lock();
         let mut unbatched = self.state.database.transactions_in_seq_range(
             checkpoint_store.next_transaction_sequence_expected(),
             last_ticket,

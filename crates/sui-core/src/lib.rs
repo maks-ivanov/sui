@@ -18,10 +18,11 @@ pub mod quorum_driver;
 pub mod safe_client;
 pub mod streamer;
 pub mod transaction_input_checker;
+pub mod transaction_orchestrator;
 pub mod transaction_streamer;
 
-#[cfg(test)]
 pub mod test_utils;
 
+mod histogram;
 mod node_sync;
 mod query_helpers;

@@ -1,15 +1,16 @@
 // Copyright (c) 2022, Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::sync::Arc;
 use std::time::Duration;
 use sui_core::authority_aggregator::AuthorityAggregator;
 use sui_core::authority_client::NetworkAuthorityClient;
+use sui_core::epoch::epoch_store::EpochStore;
 use sui_core::quorum_driver::{QuorumDriverHandler, QuorumDriverMetrics};
-use sui_node::SuiNode;
+use sui_node::SuiNodeHandle;
 use sui_types::base_types::SuiAddress;
 use sui_types::messages::{
-    ExecuteTransactionRequest, ExecuteTransactionRequestType, ExecuteTransactionResponse,
-    Transaction,
+    QuorumDriverRequest, QuorumDriverRequestType, QuorumDriverResponse, Transaction,
 };
 use test_utils::authority::{
     spawn_test_authorities, test_authority_aggregator, test_authority_configs,
@@ -19,14 +20,16 @@ use test_utils::objects::test_gas_objects;
 use test_utils::test_account_keys;
 
 async fn setup() -> (
-    Vec<SuiNode>,
+    Vec<SuiNodeHandle>,
     AuthorityAggregator<NetworkAuthorityClient>,
     Transaction,
 ) {
     let mut gas_objects = test_gas_objects();
     let configs = test_authority_configs();
     let handles = spawn_test_authorities(gas_objects.clone(), &configs).await;
-    let clients = test_authority_aggregator(&configs, handles[0].state().epoch_store().clone());
+    let committee = handles[0].with(|h| h.state().clone_committee());
+    let epoch_store = Arc::new(EpochStore::new_for_testing(&committee));
+    let aggregator = test_authority_aggregator(&configs, epoch_store);
     let (sender, keypair) = test_account_keys().pop().unwrap();
     let tx = make_transfer_sui_transaction(
         gas_objects.pop().unwrap().compute_object_reference(),
@@ -35,16 +38,16 @@ async fn setup() -> (
         sender,
         &keypair,
     );
-    (handles, clients, tx)
+    (handles, aggregator, tx)
 }
 
 #[tokio::test]
 async fn test_execute_transaction_immediate() {
-    let (_handles, clients, tx) = setup().await;
+    let (_handles, aggregator, tx) = setup().await;
     let digest = *tx.digest();
 
     let quorum_driver_handler =
-        QuorumDriverHandler::new(clients, QuorumDriverMetrics::new_for_tests());
+        QuorumDriverHandler::new(Arc::new(aggregator), QuorumDriverMetrics::new_for_tests());
     let quorum_driver = quorum_driver_handler.clone_quorum_driver();
     let handle = tokio::task::spawn(async move {
         let (cert, effects) = quorum_driver_handler.subscribe().recv().await.unwrap();
@@ -53,13 +56,13 @@ async fn test_execute_transaction_immediate() {
     });
     assert!(matches!(
         quorum_driver
-            .execute_transaction(ExecuteTransactionRequest {
+            .execute_transaction(QuorumDriverRequest {
                 transaction: tx,
-                request_type: ExecuteTransactionRequestType::ImmediateReturn,
+                request_type: QuorumDriverRequestType::ImmediateReturn,
             })
             .await
             .unwrap(),
-        ExecuteTransactionResponse::ImmediateReturn
+        QuorumDriverResponse::ImmediateReturn
     ));
 
     handle.await.unwrap();
@@ -67,21 +70,21 @@ async fn test_execute_transaction_immediate() {
 
 #[tokio::test]
 async fn test_execute_transaction_wait_for_cert() {
-    let (_handles, clients, tx) = setup().await;
+    let (_handles, aggregator, tx) = setup().await;
     let digest = *tx.digest();
 
     let quorum_driver_handler =
-        QuorumDriverHandler::new(clients, QuorumDriverMetrics::new_for_tests());
+        QuorumDriverHandler::new(Arc::new(aggregator), QuorumDriverMetrics::new_for_tests());
     let quorum_driver = quorum_driver_handler.clone_quorum_driver();
     let handle = tokio::task::spawn(async move {
         let (cert, effects) = quorum_driver_handler.subscribe().recv().await.unwrap();
         assert_eq!(*cert.digest(), digest);
         assert_eq!(effects.effects.transaction_digest, digest);
     });
-    if let ExecuteTransactionResponse::TxCert(cert) = quorum_driver
-        .execute_transaction(ExecuteTransactionRequest {
+    if let QuorumDriverResponse::TxCert(cert) = quorum_driver
+        .execute_transaction(QuorumDriverRequest {
             transaction: tx,
-            request_type: ExecuteTransactionRequestType::WaitForTxCert,
+            request_type: QuorumDriverRequestType::WaitForTxCert,
         })
         .await
         .unwrap()
@@ -96,21 +99,21 @@ async fn test_execute_transaction_wait_for_cert() {
 
 #[tokio::test]
 async fn test_execute_transaction_wait_for_effects() {
-    let (_handles, clients, tx) = setup().await;
+    let (_handles, aggregator, tx) = setup().await;
     let digest = *tx.digest();
 
     let quorum_driver_handler =
-        QuorumDriverHandler::new(clients, QuorumDriverMetrics::new_for_tests());
+        QuorumDriverHandler::new(Arc::new(aggregator), QuorumDriverMetrics::new_for_tests());
     let quorum_driver = quorum_driver_handler.clone_quorum_driver();
     let handle = tokio::task::spawn(async move {
         let (cert, effects) = quorum_driver_handler.subscribe().recv().await.unwrap();
         assert_eq!(*cert.digest(), digest);
         assert_eq!(effects.effects.transaction_digest, digest);
     });
-    if let ExecuteTransactionResponse::EffectsCert(result) = quorum_driver
-        .execute_transaction(ExecuteTransactionRequest {
+    if let QuorumDriverResponse::EffectsCert(result) = quorum_driver
+        .execute_transaction(QuorumDriverRequest {
             transaction: tx,
-            request_type: ExecuteTransactionRequestType::WaitForEffectsCert,
+            request_type: QuorumDriverRequestType::WaitForEffectsCert,
         })
         .await
         .unwrap()
@@ -127,28 +130,29 @@ async fn test_execute_transaction_wait_for_effects() {
 
 #[tokio::test]
 async fn test_update_validators() {
-    let (_handles, mut clients, tx) = setup().await;
+    let (_handles, mut aggregator, tx) = setup().await;
+    let arc_aggregator = Arc::new(aggregator.clone());
     let quorum_driver_handler =
-        QuorumDriverHandler::new(clients.clone(), QuorumDriverMetrics::new_for_tests());
+        QuorumDriverHandler::new(arc_aggregator.clone(), QuorumDriverMetrics::new_for_tests());
     let quorum_driver = quorum_driver_handler.clone_quorum_driver();
     let handle = tokio::task::spawn(async move {
         // Wait till the epoch/committee is updated.
         tokio::time::sleep(Duration::from_secs(3)).await;
 
         let result = quorum_driver
-            .execute_transaction(ExecuteTransactionRequest {
+            .execute_transaction(QuorumDriverRequest {
                 transaction: tx,
-                request_type: ExecuteTransactionRequestType::WaitForEffectsCert,
+                request_type: QuorumDriverRequestType::WaitForEffectsCert,
             })
             .await;
         // This now will fail due to epoch mismatch.
         assert!(result.is_err());
     });
 
-    // Create a new authority aggregator with a new epoch number, and update the quorum driver.
-    clients.committee.epoch = 10;
+    // Update authority aggregator with a new epoch number, and let quorum driver know.
+    aggregator.committee.epoch = 10;
     quorum_driver_handler
-        .update_validators(clients)
+        .update_validators(Arc::new(aggregator))
         .await
         .unwrap();
 
